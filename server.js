@@ -61,24 +61,34 @@ function auth(req, res, next) {
 }
 
 // -----------------------------
-// Register User
+// REGISTER
 // -----------------------------
-app.post("/api/register", async (req, res) => {
-    const { email, password } = req.body;
 
-    const existing = await users.findOne({ email });
-    if (existing) return res.status(400).json({ error: "Email already exists" });
+async function register() {
+  let email = document.getElementById('regEmail').value;
+  let password = document.getElementById('regPass').value;
 
-    const hash = bcrypt.hashSync(password, 10);
+  const res = await fetch('/api/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
 
-    await users.insertOne({
-        email,
-        password: hash,
-        createdAt: new Date(),
-    });
+  let data;
+  try {
+    data = await res.json();
+  } catch (e) {
+    alert("Server returned an invalid response.");
+    return;
+  }
 
-    res.json({ success: true });
-});
+  if (res.ok && data.success) {
+    alert("Registration successful! Please login.");
+    openLogin();
+  } else {
+    alert(data.error || "Registration failed.");
+  }
+}
 
 // -----------------------------
 // Login User
