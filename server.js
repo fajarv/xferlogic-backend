@@ -17,25 +17,37 @@ const anthropic = new Anthropic({ apiKey: process.env.CLAUDE_KEY });
 
 app.post("/api/text", async (req, res) => {
     const { prompt, model } = req.body;
+
     try {
         let output;
+
         if (model === "openai") {
-            const completion = await openai.chat.completions.create({
+            // OPENAI (new Responses API format)
+            const response = await openai.responses.create({
                 model: "gpt-4.1",
-                messages: [{ role: "user", content: prompt }],
+                input: prompt
             });
-            output = completion.choices[0].message.content;
+
+            output = response.output[0].content[0].text;
         } else {
+            // ANTHROPIC
             const completion = await anthropic.messages.create({
                 model: "claude-3-sonnet-20240229",
                 max_tokens: 1500,
                 messages: [{ role: "user", content: prompt }],
             });
+
             output = completion.content[0].text;
         }
+
         res.json({ result: output });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+
+    } catch (err) { 
+        console.error("❌ ERROR in /api/text:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
+
 
 app.post("/api/image", async (req, res) => {
     const { prompt } = req.body;
