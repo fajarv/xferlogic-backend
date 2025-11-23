@@ -270,3 +270,14 @@ app.post("/api/svg", auth, async (req, res) => {
 app.listen(3000, () =>
     console.log("🚀 XferLogic backend running on port 3000")
 );
+// -----------------------------
+// Get usage logs for current user
+// -----------------------------
+app.get("/api/usage", auth, async (req, res) => {
+    let logsList = await logs
+        .find({ userId: req.user.userId })
+        .sort({ createdAt: -1 })
+        .toArray();
+
+    res.json(logsList);
+});
